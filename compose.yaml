@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: tinkers-bench.app
+    build: configs/symfony
+    restart: unless-stopped
+    volumes:
+      - ./app:/var/www/app
+
+  db:
+    container_name: tinkers-bench.db
+    image: mysql:8.0.35
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=123qwerty
+      - MYSQL_DATABASE=app
+    volumes:
+      - tinkers-bench_db_data:/var/lib/mysql
+
+  nginx:
+    container_name: tinkers-bench.nginx
+    image: nginx:latest
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./certs:/etc/nginx/certs:ro
+      - ./configs/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./app:/var/www/app
+    depends_on:
+      - app
+      - db
+
+  phpmyadmin:
+    container_name: tinkers-bench.phpmyadmin
+    image: phpmyadmin/phpmyadmin:latest
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      - PMA_HOST=db
+      - PMA_USER=root
+      - PMA_PASSWORD=123qwerty
+    depends_on:
+      - db
+
+#  redis:
+#    container_name: tinkers-bench.redis
+#    image: redis:latest
+#    restart: unless-stopped
+#    volumes:
+#      - tinkers-bench_redis_data:/data
+
+#  memcached:
+#    container_name: tinkers-bench.memcached
+#    image: memcached:latest
+#    restart: unless-stopped
+#    command: memcached -m 64
+
+volumes:
+  tinkers-bench_db_data:
+  tinkers-bench_redis_data:
+
+networks:
+  default:
+    name: tinkers-bench
