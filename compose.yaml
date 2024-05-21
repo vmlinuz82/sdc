@@ -2,24 +2,24 @@ version: '3.8'
 
 services:
   app:
-    container_name: tinkers-bench.app
+    container_name: ${PROJECT_NAME}.app
     build: configs/symfony
     restart: unless-stopped
     volumes:
       - ./app:/var/www/app
 
   db:
-    container_name: tinkers-bench.db
+    container_name: ${PROJECT_NAME}.db
     image: mysql:8.0.35
     restart: unless-stopped
     environment:
       - MYSQL_ROOT_PASSWORD=123qwerty
       - MYSQL_DATABASE=app
     volumes:
-      - tinkers-bench_db_data:/var/lib/mysql
+      - db_data:/var/lib/mysql
 
   nginx:
-    container_name: tinkers-bench.nginx
+    container_name: ${PROJECT_NAME}.nginx
     image: nginx:latest
     restart: unless-stopped
     ports:
@@ -27,14 +27,18 @@ services:
       - "443:443"
     volumes:
       - ./certs:/etc/nginx/certs:ro
-      - ./configs/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./configs/nginx/nginx.conf.template:/etc/nginx/nginx.conf.template
+      - ./configs/nginx/startup-script.sh:/startup-script.sh
       - ./app:/var/www/app
+    command: ["/startup-script.sh"]
+    environment:
+      - PROJECT_NAME=${PROJECT_NAME}
     depends_on:
       - app
       - db
 
   phpmyadmin:
-    container_name: tinkers-bench.phpmyadmin
+    container_name: ${PROJECT_NAME}.phpmyadmin
     image: phpmyadmin/phpmyadmin:latest
     restart: unless-stopped
     ports:
@@ -47,22 +51,22 @@ services:
       - db
 
 #  redis:
-#    container_name: tinkers-bench.redis
+#    container_name: ${PROJECT_NAME}.redis
 #    image: redis:latest
 #    restart: unless-stopped
 #    volumes:
-#      - tinkers-bench_redis_data:/data
+#      - redis_data:/data
 
 #  memcached:
-#    container_name: tinkers-bench.memcached
+#    container_name: ${PROJECT_NAME}.memcached
 #    image: memcached:latest
 #    restart: unless-stopped
 #    command: memcached -m 64
 
 volumes:
-  tinkers-bench_db_data:
-  tinkers-bench_redis_data:
+  db_data:
+  redis_data:
 
 networks:
   default:
-    name: tinkers-bench
+    name: ${PROJECT_NAME}

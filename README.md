@@ -19,6 +19,9 @@ git clone git@github.com:vmlinuz82/tinkers-bench.git [your_app_folder]
 
 ## Installation
 
+### Create unique name for the project
+You need to change PROJECT_NAME variable value in [.env](.env) file to project name you want.
+
 ### Resolving Domain app.test
 
 To resolve the domain app.test, add the following to your **/etc/hosts** file:
