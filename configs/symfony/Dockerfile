@@ -11,7 +11,7 @@ ENV TZ=Europe/Sofia
 RUN useradd -ms /bin/bash app
 
 RUN apt-get update \
-    && apt-get install -y git locales-all nano curl software-properties-common supervisor iproute2 \
+    && apt-get install -y git locales-all nano curl software-properties-common supervisor iproute2\
     && add-apt-repository ppa:ondrej/php \
     && apt-get update \
     && apt-get install -y  \
@@ -41,6 +41,21 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin -
 # Install symfony cli
 RUN curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.deb.sh' | bash \
     && apt install symfony-cli
+
+# Install nvm nodejs & npm
+RUN mkdir -p /home/app/.nvm/
+ENV XDG_CONFIG_HOME=/home/app/
+ENV NVM_DIR $XDG_CONFIG_HOME.nvm
+ENV NODE_VERSION 20.11.0
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash \
+    && . $NVM_DIR/nvm.sh \
+    && nvm install $NODE_VERSION \
+    && nvm alias default $NODE_VERSION \
+    && nvm use default
+ENV NODE_PATH $NVM_DIR/v$NODE_VERSION/lib/node_modules
+ENV PATH      $NVM_DIR/v$NODE_VERSION/bin:$PATH
+RUN ln -sf $NVM_DIR/versions/node/v$NODE_VERSION/bin/npm /usr/bin/npm
+RUN ln -sf $NVM_DIR/versions/node/v$NODE_VERSION/bin/node /usr/bin/node
 
 EXPOSE 9000
 
